@@ -19,13 +19,10 @@ jobs:
           node-version: lts/*
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci && npm install playwright-ctrf-json-reporter
 
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
-        
-      - name: Install CTRF reporter
-        run: npm install playwright-ctrf-json-reporter
 
       - name: Run tests
         run: npx playwright test
