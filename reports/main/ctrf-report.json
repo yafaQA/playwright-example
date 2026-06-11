@@ -1,0 +1,62 @@
+{
+  "results": {
+    "tool": {
+      "name": "playwright"
+    },
+    "summary": {
+      "tests": 2,
+      "passed": 2,
+      "failed": 0,
+      "pending": 0,
+      "skipped": 0,
+      "other": 0,
+      "start": 1781184500269,
+      "stop": 1781184501815,
+      "suites": 0
+    },
+    "tests": [
+      {
+        "name": "has title",
+        "status": "passed",
+        "duration": 329,
+        "start": 1781184500,
+        "stop": 1781184501,
+        "rawStatus": "passed",
+        "tags": [],
+        "type": "e2e",
+        "filePath": "/home/runner/work/playwright-example/playwright-example/tests/example.spec.ts",
+        "retries": 0,
+        "flaky": false,
+        "steps": [],
+        "suite": "chromium > example.spec.ts",
+        "attachments": [],
+        "stdout": [],
+        "stderr": [],
+        "extra": {
+          "annotations": []
+        }
+      },
+      {
+        "name": "get started link",
+        "status": "passed",
+        "duration": 443,
+        "start": 1781184501,
+        "stop": 1781184501,
+        "rawStatus": "passed",
+        "tags": [],
+        "type": "e2e",
+        "filePath": "/home/runner/work/playwright-example/playwright-example/tests/example.spec.ts",
+        "retries": 0,
+        "flaky": false,
+        "steps": [],
+        "suite": "chromium > example.spec.ts",
+        "attachments": [],
+        "stdout": [],
+        "stderr": [],
+        "extra": {
+          "annotations": []
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>One Creative — Smoke Tests Dashboard</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #0f1117;
+        color: #e2e8f0;
+        min-height: 100vh;
+        padding: 40px 24px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 40px;
+      }
+
+      .logo {
+        font-size: 20px;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .logo span {
+        color: #6366f1;
+      }
+
+      .last-updated {
+        font-size: 12px;
+        color: #475569;
+      }
+
+      .envs {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+      }
+
+      .env-card {
+        background: #1e293b;
+        border-radius: 14px;
+        border: 1px solid #273549;
+        overflow: hidden;
+      }
+
+      .env-header {
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #273549;
+      }
+
+      .env-name {
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #94a3b8;
+      }
+
+      .env-summary {
+        display: flex;
+        gap: 12px;
+        font-size: 12px;
+      }
+
+      .env-summary .pass {
+        color: #22c55e;
+        font-weight: 600;
+      }
+
+      .env-summary .fail {
+        color: #ef4444;
+        font-weight: 600;
+      }
+
+      .env-summary .neutral {
+        color: #64748b;
+      }
+
+      .env-run-time {
+        font-size: 11px;
+        color: #475569;
+        padding: 8px 20px;
+        border-bottom: 1px solid #1a2535;
+      }
+
+      .test-list {
+        padding: 8px 0;
+      }
+
+      .test-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 20px;
+        border-bottom: 1px solid #1a2535;
+      }
+
+      .test-row:last-child {
+        border-bottom: none;
+      }
+
+      .test-id {
+        font-size: 11px;
+        color: #475569;
+        font-weight: 600;
+        min-width: 44px;
+      }
+
+      .test-name {
+        font-size: 13px;
+        color: #cbd5e1;
+        flex: 1;
+        padding: 0 12px;
+      }
+
+      .test-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .dot.pass {
+        background: #22c55e;
+      }
+
+      .dot.fail {
+        background: #ef4444;
+        box-shadow: 0 0 6px #ef4444;
+      }
+
+      .dot.no-data {
+        background: #334155;
+      }
+
+      .test-duration {
+        font-size: 11px;
+        color: #475569;
+        min-width: 40px;
+        text-align: right;
+      }
+
+      .no-data-msg {
+        padding: 24px 20px;
+        font-size: 13px;
+        color: #475569;
+        text-align: center;
+      }
+
+      .loading {
+        padding: 24px 20px;
+        font-size: 13px;
+        color: #475569;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">One<span>Creative</span> — Status</div>
+      <div class="last-updated" id="last-updated">Loading...</div>
+    </header>
+
+    <div class="envs" id="envs"></div>
+
+    <script>
+      const ENVS = ["qa", "dev", "demo", "prod"];
+
+      const SCREENS = [
+        { id: "SM-01", name: "Session" },
+        { id: "SM-02", name: "Dashboard" },
+        { id: "SM-03", name: "Reporting" },
+        { id: "SM-04", name: "Adoption List" },
+        { id: "SM-05", name: "Adoption Details" },
+        { id: "SM-06", name: "Analyses" },
+        { id: "SM-07", name: "Creative Library" },
+        { id: "SM-08", name: "Prompt Search" },
+        { id: "SM-09", name: "Scoring" },
+        { id: "SM-10", name: "Asset IQ" },
+        { id: "SM-11", name: "Ambassador Analysis" },
+      ];
+
+      function formatDuration(ms) {
+        if (!ms) return "—";
+        return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
+      }
+
+      function formatDate(ts) {
+        if (!ts) return "—";
+        return new Date(ts).toLocaleString("fr-FR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      function getTestStatus(tests, screenId) {
+        if (!tests) return null;
+        const match = tests.find((t) => t.name.includes(screenId));
+        return match || null;
+      }
+
+      function renderEnv(env, data) {
+        const summary = data?.results?.summary;
+        const tests = data?.results?.tests;
+
+        const passed = summary?.passed ?? 0;
+        const failed = summary?.failed ?? 0;
+        const total = summary?.tests ?? 0;
+        const runTime = summary?.start ? formatDate(summary.start) : null;
+
+        const rows = SCREENS.map((screen) => {
+          const test = getTestStatus(tests, screen.id);
+          const status = test ? test.status : "no-data";
+          const duration = test ? formatDuration(test.duration) : "—";
+
+          return `
+          <div class="test-row">
+            <span class="test-id">${screen.id}</span>
+            <span class="test-name">${screen.name}</span>
+            <span class="test-status">
+              <span class="test-duration">${duration}</span>
+              <span class="dot ${status === "passed" ? "pass" : status === "failed" ? "fail" : "no-data"}"></span>
+            </span>
+          </div>`;
+        }).join("");
+
+        return `
+        <div class="env-card">
+          <div class="env-header">
+            <span class="env-name">${env}</span>
+            ${
+              data
+                ? `<span class="env-summary">
+                <span class="pass">✓ ${passed}</span>
+                ${failed > 0 ? `<span class="fail">✗ ${failed}</span>` : ""}
+                <span class="neutral">${total} tests</span>
+              </span>`
+                : '<span class="env-summary"><span class="neutral">No data</span></span>'
+            }
+          </div>
+          ${runTime ? `<div class="env-run-time">Last run: ${runTime}</div>` : ""}
+          <div class="test-list">
+            ${data ? rows : '<div class="no-data-msg">No report available yet</div>'}
+          </div>
+        </div>`;
+      }
+
+      async function loadReport(env) {
+        try {
+          const res = await fetch(`reports/${env}/ctrf-report.json?t=${Date.now()}`);
+          if (!res.ok) return null;
+          return await res.json();
+        } catch {
+          return null;
+        }
+      }
+
+      async function init() {
+        const container = document.getElementById("envs");
+        container.innerHTML = ENVS.map(
+          (env) => `<div class="env-card loading" id="env-${env}">Loading ${env}...</div>`
+        ).join("");
+
+        const results = await Promise.all(
+          ENVS.map((env) => loadReport(env).then((data) => ({ env, data })))
+        );
+
+        container.innerHTML = results
+          .map(({ env, data }) => renderEnv(env, data))
+          .join("");
+
+        const latest = results
+          .map((r) => r.data?.results?.summary?.start)
+          .filter(Boolean)
+          .sort()
+          .pop();
+
+        document.getElementById("last-updated").textContent = latest
+          ? `Updated: ${formatDate(latest)}`
+          : "No data yet";
+      }
+
+      init();
+    </script>
+  </body>
+</html>
