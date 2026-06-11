@@ -34,7 +34,7 @@ jobs:
         if: always()
         uses: ctrf-io/github-actions-ctrf@v1
         with:
-          test-results-file: playwright-report/ctrf-report.json
+          report-path: playwright-report/ctrf-report.json
 
       - name: Prepare GitHub Pages deployment
         if: always()
