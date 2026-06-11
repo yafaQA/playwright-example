@@ -7,7 +7,7 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "playwright-ctrf-json-reporter": "^0.0.19"
+  "playwright-ctrf-json-reporter": "^0.0.19",
   "devDependencies": {
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.7.0"
